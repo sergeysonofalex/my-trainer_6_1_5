@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Тест: Файловая система и программное обеспечение (6 класс)</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: "Segoe UI", "Trebuchet MS", Tahoma, Verdana, sans-serif;
+    background: #eef4fa;
+    color: #1f2d3d;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app { max-width: 980px; margin: 0 auto; padding: 20px 20px 60px; }
+
+  /* ====== ВЕРХНЯЯ ПАНЕЛЬ ====== */
+  .topbar { text-align: center; padding: 10px 10px 20px; }
+  .topbar h1 { margin: 0 0 6px; font-size: 26px; color: #17324d; letter-spacing: .2px; }
+  .topbar p { margin: 0; color: #6b7c8f; font-size: 15px; }
+
+  /* ====== ЭКРАНЫ ====== */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  #screen-auth.active {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 68vh;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 18px;
+    padding: 26px 28px;
+    box-shadow: 0 6px 24px rgba(31, 45, 61, .09);
+    border: 1px solid #e3ecf5;
+  }
+
+  .card.center { text-align: center; }
+
+  /* ====== АВТОРИЗАЦИЯ ====== */
+  .auth-card { width: 100%; max-width: 480px; text-align: center; }
+  .auth-card h2 { margin: 0 0 8px; font-size: 24px; color: #17324d; }
+  .auth-card p.sub { margin: 0 0 22px; color: #6b7c8f; font-size: 15px; line-height: 1.5; }
+
+  .auth-label {
+    display: block;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 700;
+    color: #2c5c3f;
+    margin-bottom: 8px;
+    letter-spacing: .3px;
+  }
+
+  #studentName {
+    width: 100%;
+    padding: 15px 16px;
+    font-size: 18px;
+    font-family: inherit;
+    color: #1f2d3d;
+    border: 2px solid #2ecc71;
+    box-shadow: 0 0 10px rgba(46, 204, 113, 0.3);
+    border-radius: 12px;
+    outline: none;
+    transition: box-shadow .2s ease;
+  }
+  #studentName:focus { box-shadow: 0 0 16px rgba(46, 204, 113, 0.65); }
+
+  .hint {
+    font-size: 13px;
+    color: #8a9aab;
+    margin: 10px 0 20px;
+    text-align: left;
+  }
+
+  /* ====== КНОПКИ ====== */
+  .btn {
+    font-family: inherit;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 15px 28px;
+    border: none;
+    border-radius: 14px;
+    background: #2ecc71;
+    color: #fff;
+    cursor: pointer;
+    box-shadow: 0 5px 0 #25a25a;
+    transition: transform .08s ease, background .2s ease, box-shadow .2s ease;
+  }
+  .btn:hover:not(:disabled) { background: #34d97b; }
+  .btn:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 1px 0 #25a25a; }
+  .btn:disabled {
+    background: #b9c6d3;
+    box-shadow: 0 5px 0 #9aa8b5;
+    cursor: not-allowed;
+    color: #f2f6fa;
+  }
+  .btn.full { width: 100%; }
+  .btn.blue { background: #3498db; box-shadow: 0 5px 0 #2477ab; }
+  .btn.blue:hover:not(:disabled) { background: #3fa9ea; }
+  .btn.blue:active:not(:disabled) { box-shadow: 0 1px 0 #2477ab; }
+
+  /* ====== ШАПКА ЭТАПА ====== */
+  .stage-header {
+    background: #fff;
+    border-radius: 16px;
+    padding: 18px 22px;
+    margin-bottom: 18px;
+    border-left: 7px solid #3498db;
+    box-shadow: 0 3px 14px rgba(31, 45, 61, .07);
+  }
+  .stage-header h2 { margin: 0 0 6px; font-size: 22px; color: #17324d; }
+  .stage-header .stage-desc { margin: 0 0 12px; color: #5b6b7c; font-size: 15px; line-height: 1.5; }
+
+  .badge {
+    display: inline-block;
+    background: #eaf4fd;
+    color: #2b6ca3;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 7px 16px;
+    border-radius: 999px;
+  }
+
+  /* ====== ВОПРОСЫ ====== */
+  .q-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px 22px;
+    margin-bottom: 16px;
+    border: 1px solid #e3ecf5;
+    box-shadow: 0 3px 14px rgba(31, 45, 61, .07);
+  }
+
+  .q-title { margin: 0 0 10px; font-size: 18px; line-height: 1.45; color: #17324d; }
+
+  .q-desc {
+    display: inline-block;
+    font-size: 13px;
+    color: #3d6b8f;
+    background: #eaf4fd;
+    border-radius: 8px;
+    padding: 5px 11px;
+    margin-bottom: 15px;
+    line-height: 1.35;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 10px; }
+
+  .option {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 14px 18px;
+    font-size: 17px;
+    font-family: inherit;
+    color: #1f2d3d;
+    background: #fff;
+    border: 2px solid #dbe6f1;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: border-color .15s ease, background .15s ease, transform .08s ease;
+  }
+  .option:hover { border-color: #8fd6ac; background: #f4fdf8; }
+  .option:active { transform: scale(.99); }
+  .option.selected {
+    border-color: #2ecc71;
+    background: #e8fbf0;
+    font-weight: 700;
+    box-shadow: 0 0 0 3px rgba(46, 204, 113, .18);
+  }
+
+  /* ====== СООТВЕТСТВИЕ ====== */
+  .match-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .match-left {
+    min-width: 120px;
+    text-align: center;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 17px;
+    font-weight: 700;
+    color: #17324d;
+    background: #f1f6fb;
+    border-radius: 10px;
+    padding: 11px 14px;
+  }
+  .match-select {
+    flex: 1;
+    min-width: 170px;
+    padding: 12px 12px;
+    font-size: 16px;
+    font-family: inherit;
+    color: #1f2d3d;
+    background: #fff;
+    border: 2px solid #dbe6f1;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+  .match-select:focus {
+    outline: none;
+    border-color: #2ecc71;
+    box-shadow: 0 0 8px rgba(46, 204, 113, .35);
+  }
+
+  /* ====== ПОДВАЛ ЭТАПА ====== */
+  .stage-footer { text-align: center; margin-top: 22px; }
+
+  /* ====== РЕЗУЛЬТАТ ====== */
+  .result-label {
+    font-size: 14px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #8a9aab;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .result-name {
+    display: inline-block;
+    font-size: 30px;
+    font-weight: 800;
+    color: #fff;
+    background: linear-gradient(135deg, #2ecc71, #1e9e56);
+    padding: 12px 34px;
+    border-radius: 999px;
+    margin-bottom: 26px;
+    box-shadow: 0 6px 18px rgba(46, 204, 113, .35);
+    word-break: break-word;
+    max-width: 100%;
+  }
+
+  .medal {
+    width: 270px;
+    height: 270px;
+    margin: 0 auto 26px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 22px;
+    background: radial-gradient(circle at 32% 26%, #ffe680, #f39c12 72%);
+    box-shadow: 0 12px 30px rgba(243, 156, 18, .38), inset 0 -8px 18px rgba(0, 0, 0, .12);
+    color: #fff;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, .38);
+  }
+  .medal.level-high { background: radial-gradient(circle at 32% 26%, #b6f5cd, #2ecc71 72%); box-shadow: 0 12px 30px rgba(46, 204, 113, .4), inset 0 -8px 18px rgba(0, 0, 0, .12); }
+  .medal.level-mid  { background: radial-gradient(circle at 32% 26%, #cfe8ff, #3498db 72%); box-shadow: 0 12px 30px rgba(52, 152, 219, .4), inset 0 -8px 18px rgba(0, 0, 0, .12); }
+  .medal.level-low  { background: radial-gradient(circle at 32% 26%, #ffd6cc, #e74c3c 72%); box-shadow: 0 12px 30px rgba(231, 76, 60, .4), inset 0 -8px 18px rgba(0, 0, 0, .12); }
+
+  .medal-small { font-size: 14px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; }
+  .medal-score { font-size: 54px; font-weight: 900; line-height: 1.1; margin: 6px 0; }
+
+  .details {
+    max-width: 520px;
+    margin: 0 auto 26px;
+    text-align: left;
+  }
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    padding: 13px 18px;
+    font-size: 17px;
+    border-bottom: 1px solid #eaf1f8;
+  }
+  .detail-row:last-child { border-bottom: none; }
+  .detail-row b { font-size: 19px; color: #17324d; }
+  .detail-row.total {
+    background: #f3f9ff;
+    border-radius: 12px;
+    border-bottom: none;
+    margin-top: 8px;
+  }
+  .detail-row.total b { color: #1e9e56; font-size: 22px; }
+
+  .teacher-banner {
+    margin-top: 8px;
+    background: #e74c3c;
+    color: #fff;
+    font-size: 23px;
+    font-weight: 900;
+    text-align: center;
+    padding: 22px 18px;
+    border-radius: 16px;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    line-height: 1.35;
+    animation: pulseBanner 1.6s infinite;
+  }
+
+  @keyframes pulseBanner {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, .65); }
+    50%      { box-shadow: 0 0 0 16px rgba(231, 76, 60, 0); }
+  }
+
+  .finish-title { font-size: 26px; margin: 0 0 12px; color: #17324d; }
+  .finish-score { font-size: 34px; font-weight: 900; color: #1e9e56; margin: 0 0 10px; }
+  .finish-note { color: #5b6b7c; font-size: 16px; line-height: 1.5; margin: 0 0 24px; }
+
+  /* ====== АДАПТИВНОСТЬ ====== */
+  @media (max-width: 640px) {
+    .app { padding: 14px 12px 50px; }
+    .topbar h1 { font-size: 20px; }
+    .topbar p { font-size: 13px; }
+    .q-card { padding: 16px; }
+    .q-title { font-size: 16px; }
+    .option { font-size: 16px; padding: 13px 14px; }
+    .result-name { font-size: 24px; padding: 10px 22px; }
+    .medal { width: 210px; height: 210px; }
+    .medal-score { font-size: 40px; }
+    .teacher-banner { font-size: 18px; padding: 18px 14px; }
+    .detail-row { font-size: 15px; padding: 11px 12px; }
+    .match-left { min-width: 90px; font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="topbar">
+    <h1>Файловая система и программное обеспечение</h1>
+    <p>Интерактивный контроль знаний • 6 класс • цель обучения 6.1.1.2</p>
+  </div>
+
+  <!-- ================= ЭКРАН АВТОРИЗАЦИИ ================= -->
+  <section id="screen-auth" class="screen active">
+    <div class="card auth-card">
+      <h2>Вход в тест</h2>
+      <p class="sub">Введи своё имя и фамилию, чтобы начать тест.<br>Всего 15 вопросов и 15 баллов.</p>
+
+      <label class="auth-label" for="studentName">Имя и фамилия ученика</label>
+      <input type="text" id="studentName" placeholder="" autocomplete="off" spellcheck="false">
+      <div class="hint" id="authHint">Минимум 2 символа, чтобы кнопка стала активной.</div>
+
+      <button class="btn full" id="startBtn" disabled>Начать тест</button>
+    </div>
+  </section>
+
+  <!-- ================= ЭКРАН ВОПРОСА ================= -->
+  <section id="screen-quiz" class="screen">
+    <div class="stage-header">
+      <h2 id="quizStageTitle">Этап 1. Базовый уровень</h2>
+      <p class="stage-desc" id="quizStageDesc"></p>
+      <div class="badge" id="quizProgress">Вопрос 1 из 12</div>
+    </div>
+
+    <div id="questionContainer"></div>
+
+    <div class="stage-footer">
+      <button class="btn" id="nextBtn" disabled>Далее</button>
+    </div>
+  </section>
+
+  <!-- ================= ИТОГ ЭТАПА 1 ================= -->
+  <section id="screen-stage1-done" class="screen">
+    <div class="card center">
+      <h2 class="finish-title">Этап 1 завершён!</h2>
+      <p class="finish-score" id="stage1ResultText">Базовый уровень: 0 из 12 баллов</p>
+      <p class="finish-note">
+        Ты справился с базовым уровнем. Впереди продвинутый уровень —
+        ещё 3 вопроса и ещё 3 балла, чтобы получить 13, 14 или 15!
+      </p>
+      <button class="btn blue" id="toStage2">Перейти к Этапу 2 (Продвинутый уровень)</button>
+    </div>
+  </section>
+
+  <!-- ================= РЕЗУЛЬТАТ ================= -->
+  <section id="screen-result" class="screen">
+    <div class="card center">
+      <div class="result-label">Имя ученика</div>
+      <div class="result-name" id="resultName">—</div>
+
+      <div class="medal" id="medal">
+        <div class="medal-small">Итоговая оценка</div>
+        <div class="medal-score" id="resultScore">0 / 15</div>
+        <div class="medal-small">баллов</div>
+      </div>
+
+      <div class="details">
+        <div class="detail-row">
+          <span>Этап 1. Базовый уровень</span>
+          <b id="detailStage1">0 / 12</b>
+        </div>
+        <div class="detail-row">
+          <span>Этап 2. Продвинутый уровень</span>
+          <b id="detailStage2">0 / 3</b>
+        </div>
+        <div class="detail-row total">
+          <span>Итого</span>
+          <b id="detailTotal">0 / 15</b>
+        </div>
+      </div>
+
+      <div class="teacher-banner">Не закрывай результат пока учитель не проверит!</div>
+    </div>
+  </section>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ============================================================
+     ДАННЫЕ: ЭТАП 1 (12 вопросов по 1 баллу)
+     ============================================================ */
+  var stage1Questions = [
+    {
+      id: "s1q1", type: "single",
+      title: "Что из этого является главным программным обеспечением компьютера?",
+      descriptor: "Знает назначение операционной системы.",
+      options: ["Операционная система", "Текстовый редактор", "Калькулятор", "Компьютерная игра"],
+      correct: 0
+    },
+    {
+      id: "s1q2", type: "tf",
+      title: "Файл — это информация, хранящаяся на диске под определённым именем.",
+      descriptor: "Понимает определение файла.",
+      correct: true
+    },
+    {
+      id: "s1q3", type: "single",
+      title: "Какая часть имени файла указывает системе, в какой программе его открыть?",
+      descriptor: "Различает имя файла и его расширение.",
+      options: ["Имя файла", "Расширение", "Имя папки", "Размер файла"],
+      correct: 1
+    },
+    {
+      id: "s1q4", type: "match",
+      title: "Соотнеси расширение файла и его тип:",
+      descriptor: "Определяет типы файлов по их расширениям.",
+      variants: ["Текст", "Рисунок", "Звук", "Программа"],
+      pairs: [
+        { left: ".docx", right: "Текст" },
+        { left: ".jpg",  right: "Рисунок" },
+        { left: ".mp3",  right: "Звук" },
+        { left: ".exe",  right: "Программа" }
+      ]
+    },
+    {
+      id: "s1q5", type: "tf",
+      title: "В одной папке можно создать два файла с абсолютно одинаковыми именами и расширениями.",
+      descriptor: "Знает правила хранения файлов в папках.",
+      correct: false
+    },
+    {
+      id: "s1q6", type: "single",
+      title: "Какой из этих символов ЗАПРЕЩЕНО использовать в имени файла в Windows?",
+      descriptor: "Знает запрещённые символы в именах файлов.",
+      options: ["_", "-", "*", "1"],
+      correct: 2
+    },
+    {
+      id: "s1q7", type: "single",
+      title: "Что происходит с файлом при его обычном удалении клавишей Delete?",
+      descriptor: "Понимает принцип работы Корзины.",
+      options: ["Перемещается в Корзину", "Удаляется с диска навсегда", "Копируется в другую папку", "Переименовывается"],
+      correct: 0
+    },
+    {
+      id: "s1q8", type: "tf",
+      title: "Папка может находиться внутри другой папки.",
+      descriptor: "Понимает иерархию папок.",
+      correct: true
+    },
+    {
+      id: "s1q9", type: "single",
+      title: "Какое устройство предназначено для длительного хранения файлов?",
+      descriptor: "Различает устройства хранения информации.",
+      options: ["Жёсткий диск", "Оперативная память", "Процессор", "Монитор"],
+      correct: 0
+    },
+    {
+      id: "s1q10", type: "single",
+      title: "Что такое папка (каталог)?",
+      descriptor: "Понимает назначение папок.",
+      options: ["Контейнер для файлов и других папок", "Программа для работы с текстом", "Устройство для вывода информации", "Файл с расширением .exe"],
+      correct: 0
+    },
+    {
+      id: "s1q11", type: "tf",
+      title: "Операционная система — это программа.",
+      descriptor: "Знает, что ОС относится к программному обеспечению.",
+      correct: true
+    },
+    {
+      id: "s1q12", type: "single",
+      title: "Какое расширение у графического файла?",
+      descriptor: "Определяет расширения графических файлов.",
+      options: [".jpg", ".docx", ".mp3", ".exe"],
+      correct: 0
+    }
+  ];
+
+  /* ============================================================
+     ДАННЫЕ: ЭТАП 2 (3 вопроса по 1 баллу)
+     ============================================================ */
+  var stage2Questions = [
+    {
+      id: "s2q1", type: "single",
+      title: "Дан полный путь к файлу: C:\\Школа\\6_класс\\Информатика\\Реферат.docx. В какой папке непосредственно лежит файл Реферат.docx?",
+      descriptor: "Определяет местоположение файла по его полному пути.",
+      options: ["C:\\", "Школа", "6_класс", "Информатика"],
+      correct: 3
+    },
+    {
+      id: "s2q2", type: "single",
+      title: "Найди ошибку в имени файла: Урок:6_Информатика.docx. Почему файл не сохранится?",
+      descriptor: "Анализирует корректность именования файлов.",
+      options: [
+        "Использовано запрещённое двоеточие «:»",
+        "Имя файла слишком длинное",
+        "В имени использована цифра 6",
+        "Нельзя использовать расширение .docx"
+      ],
+      correct: 0
+    },
+    {
+      id: "s2q3", type: "match",
+      title: "Соотнеси тип программного обеспечения и его пример:",
+      descriptor: "Классифицирует программное обеспечение по типам.",
+      variants: ["Системное ПО", "Прикладное ПО", "Инструментальное ПО"],
+      pairs: [
+        { left: "Операционная система", right: "Системное ПО" },
+        { left: "Текстовый редактор", right: "Прикладное ПО" },
+        { left: "Среда программирования", right: "Инструментальное ПО" }
+      ]
+    }
+  ];
+
+  /* ============================================================
+     СОСТОЯНИЕ
+     ============================================================ */
+  var studentName = "";
+  var currentStage = 1;
+  var currentIndex = 0;
+  var answers1 = {};
+  var answers2 = {};
+  var score1 = 0;
+  var score2 = 0;
+
+  /* ============================================================
+     ССЫЛКИ НА ЭЛЕМЕНТЫ
+     ============================================================ */
+  var nameInput      = document.getElementById("studentName");
+  var startBtn       = document.getElementById("startBtn");
+  var authHint       = document.getElementById("authHint");
+
+  var quizStageTitle = document.getElementById("quizStageTitle");
+  var quizStageDesc  = document.getElementById("quizStageDesc");
+  var quizProgress   = document.getElementById("quizProgress");
+  var questionContainer = document.getElementById("questionContainer");
+  var nextBtn        = document.getElementById("nextBtn");
+
+  var stage1Result   = document.getElementById("stage1ResultText");
+  var toStage2Btn    = document.getElementById("toStage2");
+
+  var resultName     = document.getElementById("resultName");
+  var resultScore    = document.getElementById("resultScore");
+  var medal          = document.getElementById("medal");
+  var detailStage1   = document.getElementById("detailStage1");
+  var detailStage2   = document.getElementById("detailStage2");
+  var detailTotal    = document.getElementById("detailTotal");
+
+  /* ============================================================
+     ПЕРЕКЛЮЧЕНИЕ ЭКРАНОВ
+     ============================================================ */
+  function showScreen(id) {
+    var screens = document.querySelectorAll(".screen");
+    for (var i = 0; i < screens.length; i++) {
+      screens[i].classList.toggle("active", screens[i].id === id);
+    }
+    window.scrollTo(0, 0);
+  }
+
+  /* ============================================================
+     ПРОВЕРКА ОТВЕТОВ
+     ============================================================ */
+  function isQuestionAnswered(q, answers) {
+    var a = answers[q.id];
+    if (a === undefined || a === null || a === "") return false;
+    if (q.type === "match") {
+      for (var i = 0; i < q.pairs.length; i++) {
+        if (!a[q.pairs[i].left]) return false;
+      }
+      return true;
+    }
+    return true;
+  }
+
+  function countScore(questions, answers) {
+    var total = 0;
+    for (var i = 0; i < questions.length; i++) {
+      var q = questions[i];
+      if (!isQuestionAnswered(q, answers)) continue;
+      var a = answers[q.id];
+      if (q.type === "match") {
+        var ok = true;
+        for (var j = 0; j < q.pairs.length; j++) {
+          if (a[q.pairs[j].left] !== q.pairs[j].right) { ok = false; break; }
+        }
+        if (ok) total++;
+      } else {
+        if (a === q.correct) total++;
+      }
+    }
+    return total;
+  }
+
+  /* ============================================================
+     ПОЛУЧЕНИЕ ТЕКУЩИХ ДАННЫХ
+     ============================================================ */
+  function getCurrentQuestions() {
+    return currentStage === 1 ? stage1Questions : stage2Questions;
+  }
+
+  function getCurrentAnswers() {
+    return currentStage === 1 ? answers1 : answers2;
+  }
+
+  /* ============================================================
+     ОТРИСОВКА ТЕКУЩЕГО ВОПРОСА
+     ============================================================ */
+  function renderCurrentQuestion() {
+    var qs = getCurrentQuestions();
+    var q = qs[currentIndex];
+    var answers = getCurrentAnswers();
+
+    // Заголовок этапа
+    if (currentStage === 1) {
+      quizStageTitle.textContent = "Этап 1. Базовый уровень";
+      quizStageDesc.innerHTML = "12 простых вопросов по 1 баллу. Максимум за этап — <b>12 баллов</b>.";
+    } else {
+      quizStageTitle.textContent = "Этап 2. Продвинутый уровень";
+      quizStageDesc.innerHTML = "3 усложнённых вопроса по 1 баллу. Максимум за этап — <b>3 балла</b>.";
+    }
+    quizProgress.textContent = "Вопрос " + (currentIndex + 1) + " из " + qs.length;
+
+    // Очищаем контейнер
+    questionContainer.innerHTML = "";
+
+    // Карточка вопроса
+    var card = document.createElement("div");
+    card.className = "q-card";
+
+    var title = document.createElement("h3");
+    title.className = "q-title";
+    title.textContent = (currentIndex + 1) + ". " + q.title;
+    card.appendChild(title);
+
+    var desc = document.createElement("div");
+    desc.className = "q-desc";
+    desc.textContent = "🎯 " + q.descriptor;
+    card.appendChild(desc);
+
+    if (q.type === "single" || q.type === "tf") {
+      var list = (q.type === "tf") ? ["Верно", "Неверно"] : q.options;
+      var opts = document.createElement("div");
+      opts.className = "options";
+
+      list.forEach(function (text, idx) {
+        var value = (q.type === "tf") ? (idx === 0) : idx;
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "option";
+        btn.textContent = text;
+
+        if (answers[q.id] === value) btn.classList.add("selected");
+
+        btn.addEventListener("click", function () {
+          answers[q.id] = value;
+          var all = opts.querySelectorAll(".option");
+          for (var i = 0; i < all.length; i++) all[i].classList.remove("selected");
+          btn.classList.add("selected");
+          updateNextButton();
+        });
+
+        opts.appendChild(btn);
+      });
+
+      card.appendChild(opts);
+    }
+
+    if (q.type === "match") {
+      var wrap = document.createElement("div");
+      wrap.className = "match";
+
+      q.pairs.forEach(function (pair) {
+        var row = document.createElement("div");
+        row.className = "match-row";
+
+        var left = document.createElement("span");
+        left.className = "match-left";
+        left.textContent = pair.left;
+        row.appendChild(left);
+
+        var sel = document.createElement("select");
+        sel.className = "match-select";
+
+        var ph = document.createElement("option");
+        ph.value = "";
+        ph.textContent = "— выбери тип —";
+        sel.appendChild(ph);
+
+        q.variants.forEach(function (v) {
+          var o = document.createElement("option");
+          o.value = v;
+          o.textContent = v;
+          sel.appendChild(o);
+        });
+
+        var current = (answers[q.id] || {})[pair.left];
+        if (current) sel.value = current;
+
+        sel.addEventListener("change", function () {
+          if (!answers[q.id]) answers[q.id] = {};
+          answers[q.id][pair.left] = sel.value;
+          updateNextButton();
+        });
+
+        row.appendChild(sel);
+        wrap.appendChild(row);
+      });
+
+      card.appendChild(wrap);
+    }
+
+    questionContainer.appendChild(card);
+
+    // Текст кнопки "Далее"
+    var isLast = (currentIndex === qs.length - 1);
+    if (currentStage === 1) {
+      nextBtn.textContent = isLast ? "Завершить Этап 1" : "Далее";
+    } else {
+      nextBtn.textContent = isLast ? "Завершить тест" : "Далее";
+    }
+
+    updateNextButton();
+  }
+
+  function updateNextButton() {
+    var qs = getCurrentQuestions();
+    var q = qs[currentIndex];
+    var answers = getCurrentAnswers();
+    nextBtn.disabled = !isQuestionAnswered(q, answers);
+  }
+
+  /* ============================================================
+     ОБРАБОТЧИК КНОПКИ "ДАЛЕЕ"
+     ============================================================ */
+  nextBtn.addEventListener("click", function () {
+    var qs = getCurrentQuestions();
+    if (currentIndex < qs.length - 1) {
+      currentIndex++;
+      renderCurrentQuestion();
+    } else {
+      // Последний вопрос этапа
+      if (currentStage === 1) {
+        score1 = countScore(stage1Questions, answers1);
+        stage1Result.textContent = "Базовый уровень: " + score1 + " из 12 баллов";
+        showScreen("screen-stage1-done");
+      } else {
+        score2 = countScore(stage2Questions, answers2);
+        var total = score1 + score2;
+
+        resultName.textContent = studentName;
+        resultScore.textContent = total + " / 15";
+        detailStage1.textContent = score1 + " / 12";
+        detailStage2.textContent = score2 + " / 3";
+        detailTotal.textContent = total + " / 15";
+
+        medal.classList.remove("level-high", "level-mid", "level-low");
+        if (total >= 13) {
+          medal.classList.add("level-high");
+        } else if (total >= 9) {
+          medal.classList.add("level-mid");
+        } else {
+          medal.classList.add("level-low");
+        }
+
+        showScreen("screen-result");
+      }
+    }
+  });
+
+  /* ============================================================
+     АВТОРИЗАЦИЯ
+     ============================================================ */
+  function checkName() {
+    var ok = nameInput.value.trim().length >= 2;
+    startBtn.disabled = !ok;
+    authHint.textContent = ok
+      ? "Отлично! Можно начинать тест."
+      : "Минимум 2 символа, чтобы кнопка стала активной.";
+  }
+
+  nameInput.addEventListener("input", checkName);
+
+  nameInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter" && !startBtn.disabled) {
+      startBtn.click();
+    }
+  });
+
+  startBtn.addEventListener("click", function () {
+    studentName = nameInput.value.trim();
+    if (studentName.length < 2) return;
+    currentStage = 1;
+    currentIndex = 0;
+    answers1 = {};
+    answers2 = {};
+    showScreen("screen-quiz");
+    renderCurrentQuestion();
+  });
+
+  /* ============================================================
+     ПЕРЕХОД К ЭТАПУ 2
+     ============================================================ */
+  toStage2Btn.addEventListener("click", function () {
+    currentStage = 2;
+    currentIndex = 0;
+    showScreen("screen-quiz");
+    renderCurrentQuestion();
+  });
+
+  /* ============================================================
+     ЗАПУСК
+     ============================================================ */
+  checkName();
+})();
+</script>
+
+</body>
+</html>
